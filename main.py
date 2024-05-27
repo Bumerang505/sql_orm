@@ -11,7 +11,6 @@ port_db = input('Введите порт сервера (например: 5432)
 name_db = input('Введите название базы данных: ')
 
 DSN = f'{driver_db}://{login_db}:{password_db}@{hostname_db}:{port_db}/{name_db}'
-
 engine = sqlalchemy.create_engine(DSN)
 
 Session = sessionmaker(bind=engine)
@@ -83,8 +82,8 @@ def get_books_info(publisher_name_id):
             join(Sale). \
             filter(Publisher.name == publisher_name_id).all()
 
-    for Book.title, Shop.name, Sale.price, Sale.date_sale in select_result:
-        print(f'{Book.title} | {Shop.name} | {Sale.price} | {Sale.date_sale}')
+    for book_title, shop_name, sale_price, sale_date_sale in select_result:
+        print(f"{book_title: <40} | {shop_name: <10} | {sale_price: <8} | {sale_date_sale.strftime('%d-%m-%Y')}")
 
 
 parsing_data_from_json('test_data.json')
