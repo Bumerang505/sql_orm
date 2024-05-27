@@ -10,7 +10,6 @@ hostname_db = input('Введите название сервера (напри�
 port_db = input('Введите порт сервера (например: 5432) : ')
 name_db = input('Введите название базы данных: ')
 
-
 DSN = f'{driver_db}://{login_db}:{password_db}@{hostname_db}:{port_db}/{name_db}'
 
 engine = sqlalchemy.create_engine(DSN)
@@ -63,28 +62,33 @@ def parsing_data_from_json(json_path):
                 session.commit()
 
 
-def get_books_info():
-    publisher_name = input('Введите имя издателя: ')
-    select = (session.query(Publisher, Book, Stock, Shop, Sale).join(Publisher).join(Stock).join(Shop).join(Sale)
-              .filter(Publisher.name.like(publisher_name)))
+def get_books_info(publisher_name_id):
+    select = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).select_from(Shop). \
+        join(Stock). \
+        join(Book). \
+        join(Publisher). \
+        join(Sale)
+    if publisher_name_id.isdigit():
+        select_result = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).select_from(Shop). \
+            join(Stock). \
+            join(Book). \
+            join(Publisher). \
+            join(Sale). \
+            filter(Publisher.id == publisher_name_id).all()
+    else:
+        select_result = session.query(Book.title, Shop.name, Sale.price, Sale.date_sale).select_from(Shop). \
+            join(Stock). \
+            join(Book). \
+            join(Publisher). \
+            join(Sale). \
+            filter(Publisher.name == publisher_name_id).all()
 
-    list_classes = []
-    for table in select:
-        for row in table:
-            list_classes.append(str(row))
-
-    list_rows = []
-    for i in list_classes:
-        list_rows.append(i.strip("[]").split(', '))
-
-    book_title = list_rows[1][1]
-    shop_name = list_rows[3][1]
-    sale_price = list_rows[4][1]
-    data_sale = list_rows[4][2]
-
-    print(f'{book_title} | {shop_name} | {sale_price} | {data_sale}')
+    for Book.title, Shop.name, Sale.price, Sale.date_sale in select_result:
+        print(f'{Book.title} | {Shop.name} | {Sale.price} | {Sale.date_sale}')
 
 
 parsing_data_from_json('test_data.json')
-get_books_info()
+if __name__ == '__main__':
+    input_publisher = input('Введите имя или id издателя: ')
+    get_books_info(input_publisher)
 session.close()
